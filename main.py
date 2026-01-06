@@ -1,9 +1,12 @@
 """
 Horloge de Mamie Jeannine
-Programme qui affiche l'heure et permet de la régler manuellement.
+Programme qui affiche l'heure avec alarme
 """
 
 import time
+
+# Variable globale pour stocker l'heure de l'alarme
+alarme = None
 
 
 def afficher_heure(heure_tuple):
@@ -51,6 +54,47 @@ def regler_heure():
         print("Erreur : veuillez entrer des nombres entiers !")
         return None
 
+
+def regler_alarme():
+    """
+    Demande à l'utilisateur l'heure de l'alarme et la stocke. 
+    L'alarme est stockée dans la variable globale 'alarme'. 
+    """
+    global alarme
+    
+    print("\n--- RÉGLAGE DE L'ALARME ---")
+    
+    try:
+        heures = int(input("Entrez les heures (0-23) : "))
+        minutes = int(input("Entrez les minutes (0-59) : "))
+        secondes = int(input("Entrez les secondes (0-59) : "))
+        
+        # Vérification que les valeurs sont dans les plages valides
+        if 0 <= heures <= 23 and 0 <= minutes <= 59 and 0 <= secondes <= 59:
+            alarme = (heures, minutes, secondes)
+            print(f"Alarme réglée pour {afficher_heure(alarme)}")
+        else:
+            print("Erreur :  valeurs hors limites !")
+    except ValueError:
+        print("Erreur : veuillez entrer des nombres entiers !")
+
+
+def verifier_alarme(heure_actuelle):
+    """
+    Compare l'heure actuelle avec l'heure de l'alarme. 
+    Si elles correspondent, affiche le message d'alarme.
+    
+    Paramètre:
+        heure_actuelle: tuple (heures, minutes, secondes)
+    """
+    global alarme
+
+    if alarme is not None and heure_actuelle == alarme:
+        print("\n\nDRIIIIING !  RÉVEIL MAMIE JEANNINE !\n")
+        # On désactive l'alarme après qu'elle ait sonné
+        alarme = None
+
+
 def horloge_principale(heure_depart=None):
     """
     Fonction principale de l'horloge.
@@ -87,6 +131,9 @@ def horloge_principale(heure_depart=None):
             # end="" empêche le saut de ligne
             # flush=True force l'affichage immédiat
             print(f"\r{afficher_heure(heure_actuelle)}", end="", flush=True)
+            
+            # Vérifier si l'alarme doit sonner
+            verifier_alarme(heure_actuelle)
             
             # Attendre 1 seconde
             time.sleep(1)
@@ -125,6 +172,11 @@ if __name__ == "__main__":
     choix_heure = input("\nVoulez-vous régler l'heure manuellement ?  (o/n) : ")
     if choix_heure.lower() == "o":
         heure_personnalisee = regler_heure()
+    
+    # Option 2 :  Régler une alarme
+    choix_alarme = input("\nVoulez-vous régler une alarme ? (o/n) : ")
+    if choix_alarme. lower() == "o":
+        regler_alarme()
     
     # Lancer l'horloge
     horloge_principale(heure_personnalisee)
