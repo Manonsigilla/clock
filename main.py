@@ -7,6 +7,12 @@ mode_24h = True
 
 
 def afficher_heure(heure_tuple):
+    """
+    Formate et retourne l'heure sous forme de chaîne de caractères.
+    
+    Paramètre: 
+        heure_tuple: tuple (heures, minutes, secondes)
+    """
     
     global mode_24h
     
@@ -116,12 +122,16 @@ def verifier_alarme(heure_actuelle):
     global alarme
     
     if alarme is not None and heure_actuelle == alarme:
-        print("\n\nDRIIIIING !\n")
+        print("\n\nDRIIIIING ! RÉVEIL MAMIE JEANNINE !\n")
         alarme = None
 
 
 def horloge_principale(heure_depart=None):
     """
+    Retourne l'heure actuelle pour permettre la relance
+    
+    Retourne:
+        tuple (heures, minutes, secondes) - l'heure au moment de l'arrêt
     Fonction principale de l'horloge.
     Affiche l'heure et l'actualise chaque seconde.
     """
@@ -164,6 +174,9 @@ def horloge_principale(heure_depart=None):
                 heures = 0
     
     except KeyboardInterrupt:
+        # Au lieu d'arrêter définitivement, on retourne l'heure
+        print("\n\nHorloge mise en pause.")
+        return (heures, minutes, secondes)
         print("\n\nHorloge arrêtée.")
 
 
@@ -187,5 +200,28 @@ if __name__ == "__main__":
     if choix_alarme.lower() == "o":
         regler_alarme()
     
+    # Boucle permettant de relancer l'horloge après Ctrl+C
+    while True:
+        # Lancer l'horloge et récupérer l'heure au moment de l'arrêt
+        heure_actuelle = horloge_principale(heure_personnalisee)
+        
+        # Si l'horloge a été interrompue (Ctrl+C)
+        if heure_actuelle is not None:
+            # Afficher l'heure actuelle et proposer de relancer
+            choix_relance = input(
+                f"\nHeure actuelle : {afficher_heure(heure_actuelle)}"
+                f"\nVoulez-vous relancer l'horloge ? (o/n) : "
+            )
+            
+            if choix_relance.lower() == "o":
+                # Relancer avec l'heure actuelle (reprend où on s'était arrêté)
+                heure_personnalisee = heure_actuelle
+            else:
+                # Quitter définitivement
+                print("\nÀ bientôt Mamie Jeannine !")
+                break
+        else:
+            # L'horloge s'est arrêtée normalement (cas peu probable)
+            break
     # Lancer l'horloge (s'arrête définitivement avec Ctrl+C)
     horloge_principale(heure_personnalisee)
