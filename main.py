@@ -1,12 +1,9 @@
-"""
-Horloge de Mamie Jeannine
-Programme qui affiche l'heure avec alarme
-"""
-
 import time
 
 # Variable globale pour stocker l'heure de l'alarme
 alarme = None
+
+mode_24h = True
 
 
 def afficher_heure(heure_tuple):
@@ -15,15 +12,33 @@ def afficher_heure(heure_tuple):
     
     Paramètre: 
         heure_tuple: tuple (heures, minutes, secondes)
-    
-    Retourne:
-        Chaîne formatée "hh:mm:ss"
     """
+    
+    global mode_24h
+    
     heures = heure_tuple[0]
     minutes = heure_tuple[1]
     secondes = heure_tuple[2]
     
-    heure_formatee = f"{heures:02d}:{minutes:02d}:{secondes:02d}"
+    if mode_24h:
+        # Mode 24 heures classique
+        heure_formatee = f"{heures:02d}:{minutes:02d}:{secondes:02d}"
+    else:
+        # Mode 12 heures avec AM/PM
+        if heures == 0:
+            heures_12h = 12
+            periode = "AM"
+        elif heures < 12:
+            heures_12h = heures
+            periode = "AM"
+        elif heures == 12:
+            heures_12h = 12
+            periode = "PM"
+        else:
+            heures_12h = heures - 12
+            periode = "PM"
+        
+        heure_formatee = f"{heures_12h:02d}:{minutes:02d}:{secondes:02d} {periode}"
     
     return heure_formatee
 
@@ -52,6 +67,30 @@ def regler_heure():
     except ValueError:
         print("Erreur : veuillez entrer des nombres entiers !")
         return None
+
+
+def choisir_mode_affichage():
+    
+    global mode_24h
+    
+    print("\n--- MODE D'AFFICHAGE ---")
+    print("1. Mode 24 heures (ex: 16:30:00)")
+    print("2. Mode 12 heures (ex: 04:30:00 PM)")
+    
+    try:
+        choix = int(input("Choisissez le mode (1 ou 2) : "))
+        if choix == 1:
+            mode_24h = True
+            print("✓ Mode 24 heures sélectionné")
+        elif choix == 2:
+            mode_24h = False
+            print("✓ Mode 12 heures sélectionné")
+        else:
+            print("Choix invalide. Mode 24 heures par défaut.")
+            mode_24h = True
+    except ValueError:
+        print("Erreur : veuillez entrer 1 ou 2. Mode 24 heures par défaut.")
+        mode_24h = True
 
 
 def regler_alarme():
@@ -93,6 +132,8 @@ def horloge_principale(heure_depart=None):
     
     Retourne:
         tuple (heures, minutes, secondes) - l'heure au moment de l'arrêt
+    Fonction principale de l'horloge.
+    Affiche l'heure et l'actualise chaque seconde.
     """
     # Initialisation de l'heure
     if heure_depart is not None:
@@ -136,6 +177,7 @@ def horloge_principale(heure_depart=None):
         # Au lieu d'arrêter définitivement, on retourne l'heure
         print("\n\nHorloge mise en pause.")
         return (heures, minutes, secondes)
+        print("\n\nHorloge arrêtée.")
 
 
 # PROGRAMME PRINCIPAL
@@ -145,6 +187,8 @@ if __name__ == "__main__":
     print("=" * 50)
     
     heure_personnalisee = None
+    
+    choisir_mode_affichage()
     
     # Régler l'heure manuellement
     choix_heure = input("\nVoulez-vous régler l'heure manuellement ? (o/n) : ")
@@ -179,3 +223,5 @@ if __name__ == "__main__":
         else:
             # L'horloge s'est arrêtée normalement (cas peu probable)
             break
+    # Lancer l'horloge (s'arrête définitivement avec Ctrl+C)
+    horloge_principale(heure_personnalisee)
