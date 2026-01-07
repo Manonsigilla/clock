@@ -3,16 +3,16 @@ import time
 
 class Horloge:
     def __init__(self):
-        self.alarme = None
+        self.alarmes = {}  # Dictionnaire pour stocker les alarmes nommées
         self.mode_24h = True
         self.heure_actuelle = None
 
     def afficher_heure(self, heure_tuple):
         """
-        Formate et retourne l'heure sous forme de chaîne de caractères. 
+        Formate et retourne l'heure sous forme de chaîne de caractères.  
         
         Paramètre:  
-            heure_tuple:  tuple (heures, minutes, secondes)
+            heure_tuple:   tuple (heures, minutes, secondes)
         """
         heures, minutes, secondes = heure_tuple  # Tuple unpacking
         
@@ -34,14 +34,14 @@ class Horloge:
                 heures_12h = heures - 12
                 periode = "PM"
             
-            heure_formatee = f"{heures_12h: 02d}:{minutes:02d}:{secondes:02d} {periode}"
+            heure_formatee = f"{heures_12h:02d}:{minutes:02d}:{secondes:02d} {periode}"
         
         return heure_formatee
 
     def demander_heure(self, titre="RÉGLAGE"):
         """
         Demande une heure à l'utilisateur avec validation.
-        Fonction utilitaire réutilisable. 
+        Fonction utilitaire réutilisable.  
         
         Retourne:  
             tuple (heures, minutes, secondes) ou None si erreur
@@ -64,7 +64,7 @@ class Horloge:
 
     def regler_heure(self):
         """
-        Permet à l'utilisateur de régler l'heure de démarrage de l'horloge.
+        Permet à l'utilisateur de régler l'heure de démarrage de l'horloge. 
         
         Retourne:  
             tuple (heures, minutes, secondes) ou None si erreur
@@ -109,23 +109,58 @@ class Horloge:
             self.alarme = heure_alarme
             print(f"Alarme réglée pour {self.afficher_heure(self.alarme)}")
 
+    def regler_multiple_alarmes(self):
+        """
+        Permet de régler plusieurs alarmes avec un nom pour chaque. 
+        """
+        print("\n--- RÉGLAGE DES ALARMES ---")
+        print("(Tapez 'fin' pour terminer l'ajout d'alarmes)")
+        
+        while True: 
+            nom_alarme = input("\nNom de l'alarme (ou 'fin' pour terminer) : ").strip()
+            
+            if nom_alarme. lower() == "fin":
+                break
+            
+            if not nom_alarme:
+                print("Veuillez entrer un nom valide.")
+                continue
+            
+            if nom_alarme in self.alarmes:
+                print(f" L'alarme '{nom_alarme}' existe déjà.")
+                continue
+            
+            heure_alarme = self.demander_heure(f"RÉGLAGE DE L'ALARME - {nom_alarme}")
+            
+            if heure_alarme is not None:
+                self.alarmes[nom_alarme] = heure_alarme
+                print(f"✓ Alarme '{nom_alarme}' réglée pour {self.afficher_heure(heure_alarme)}")
+
     def verifier_alarme(self, heure_actuelle):
         """
-        Compare l'heure actuelle avec l'heure de l'alarme. 
+        Vérifie toutes les alarmes et les déclenche si l'heure correspond.
         """
-        if self.alarme is not None and heure_actuelle == self.alarme:
-            print("\n\n DRIIIIIING !  RÉVEIL MAMIE JEANNINE !\n")
-            self.alarme = None
+        alarmes_declenchees = []
+        
+        for nom_alarme, heure_alarme in self.alarmes.items():
+            if heure_actuelle == heure_alarme:
+                alarmes_declenchees.append(nom_alarme)
+        
+        if alarmes_declenchees:
+            alarmes_str = ", ".join(alarmes_declenchees)
+            print(f"\n\n DRIIIIIING !   ALARME(S) : {alarmes_str} !\n")
+            for nom in alarmes_declenchees: 
+                del self.alarmes[nom]
 
     def horloge_principale(self, heure_depart=None):
         """
-        Fonction principale de l'horloge.
-        Affiche l'heure et l'actualise chaque seconde. 
+        Fonction principale de l'horloge. 
+        Affiche l'heure et l'actualise chaque seconde.  
         
-        Paramètre: 
-            heure_depart: tuple (heures, minutes, secondes) optionnel
+        Paramètre:  
+            heure_depart:  tuple (heures, minutes, secondes) optionnel
         
-        Retourne: 
+        Retourne:  
             tuple (heures, minutes, secondes) - l'heure au moment de l'arrêt
         """
         # Initialisation de l'heure
@@ -135,7 +170,7 @@ class Horloge:
             now = time.localtime()
             heures = now.tm_hour
             minutes = now.tm_min
-            secondes = now.tm_sec
+            secondes = now. tm_sec
         
         print("\nHorloge démarrée ! Appuyez sur Ctrl+C pour arrêter")
         print("-" * 40)
@@ -171,7 +206,7 @@ class Horloge:
     def demarrer(self):
         """
         Point d'entrée principal de l'horloge. 
-        Gère le menu et la boucle de relance.
+        Gère le menu et la boucle de relance. 
         """
         print("=" * 50)
         print("  HORLOGE DE MAMIE JEANNINE")
@@ -183,14 +218,14 @@ class Horloge:
         self.choisir_mode_affichage()
         
         # Régler l'heure manuellement
-        choix_heure = input("\nVoulez-vous régler l'heure manuellement ? (o/n) : ")
-        if choix_heure.lower() == "o":
+        choix_heure = input("\nVoulez-vous régler l'heure manuellement ?  (o/n) : ")
+        if choix_heure. lower() == "o":
             heure_personnalisee = self.regler_heure()
         
-        # Régler une alarme
-        choix_alarme = input("\nVoulez-vous régler une alarme ?  (o/n) : ")
+        # Régler plusieurs alarmes
+        choix_alarme = input("\nVoulez-vous régler des alarmes ?  (o/n) : ")
         if choix_alarme.lower() == "o":
-            self.regler_alarme()
+            self.regler_multiple_alarmes()
         
         # Boucle permettant de relancer l'horloge après Ctrl+C
         while True:
@@ -216,6 +251,6 @@ class Horloge:
 
 
 # PROGRAMME PRINCIPAL
-if __name__ == "__main__": 
+if __name__ == "__main__":  
     horloge = Horloge()
     horloge.demarrer()
