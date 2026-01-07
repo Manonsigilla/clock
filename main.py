@@ -177,7 +177,6 @@ def horloge_principale(heure_depart=None):
         # Au lieu d'arrêter définitivement, on retourne l'heure
         print("\n\nHorloge mise en pause.")
         return (heures, minutes, secondes)
-        print("\n\nHorloge arrêtée.")
 
 
 # PROGRAMME PRINCIPAL
@@ -223,5 +222,3 @@ if __name__ == "__main__":
         else:
             # L'horloge s'est arrêtée normalement (cas peu probable)
             break
-    # Lancer l'horloge (s'arrête définitivement avec Ctrl+C)
-    horloge_principale(heure_personnalisee)
