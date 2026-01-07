@@ -1,36 +1,45 @@
-"""
-Horloge de Mamie Jeannine
-Programme qui affiche l'heure avec alarme
-"""
-
 import time
 
 # Variable globale pour stocker l'heure de l'alarme
 alarme = None
 
+mode_24h = True
+
 
 def afficher_heure(heure_tuple):
-    """
-    Formate et retourne l'heure sous forme de chaîne de caractères. 
     
-    Paramètre: 
-        heure_tuple:  tuple (heures, minutes, secondes)
+    global mode_24h
     
-    Retourne:
-        Chaîne formatée "hh:mm:ss"
-    """
     heures = heure_tuple[0]
     minutes = heure_tuple[1]
     secondes = heure_tuple[2]
     
-    heure_formatee = f"{heures:02d}:{minutes:02d}:{secondes:02d}"
+    if mode_24h:
+        # Mode 24 heures classique
+        heure_formatee = f"{heures:02d}:{minutes:02d}:{secondes:02d}"
+    else:
+        # Mode 12 heures avec AM/PM
+        if heures == 0:
+            heures_12h = 12
+            periode = "AM"
+        elif heures < 12:
+            heures_12h = heures
+            periode = "AM"
+        elif heures == 12:
+            heures_12h = 12
+            periode = "PM"
+        else:
+            heures_12h = heures - 12
+            periode = "PM"
+        
+        heure_formatee = f"{heures_12h:02d}:{minutes:02d}:{secondes:02d} {periode}"
     
     return heure_formatee
 
 
 def regler_heure():
     """
-    Permet à l'utilisateur de régler l'heure de démarrage de l'horloge. 
+    Permet à l'utilisateur de régler l'heure de démarrage de l'horloge.
     
     Retourne: 
         tuple (heures, minutes, secondes) ou None si erreur
@@ -42,7 +51,6 @@ def regler_heure():
         minutes = int(input("Entrez les minutes (0-59) : "))
         secondes = int(input("Entrez les secondes (0-59) : "))
         
-        # Vérification que les valeurs sont dans les plages valides
         if 0 <= heures <= 23 and 0 <= minutes <= 59 and 0 <= secondes <= 59:
             heure_reglee = (heures, minutes, secondes)
             print(f"Heure réglée sur {afficher_heure(heure_reglee)}")
@@ -55,10 +63,33 @@ def regler_heure():
         return None
 
 
+def choisir_mode_affichage():
+    
+    global mode_24h
+    
+    print("\n--- MODE D'AFFICHAGE ---")
+    print("1. Mode 24 heures (ex: 16:30:00)")
+    print("2. Mode 12 heures (ex: 04:30:00 PM)")
+    
+    try:
+        choix = int(input("Choisissez le mode (1 ou 2) : "))
+        if choix == 1:
+            mode_24h = True
+            print("✓ Mode 24 heures sélectionné")
+        elif choix == 2:
+            mode_24h = False
+            print("✓ Mode 12 heures sélectionné")
+        else:
+            print("Choix invalide. Mode 24 heures par défaut.")
+            mode_24h = True
+    except ValueError:
+        print("Erreur : veuillez entrer 1 ou 2. Mode 24 heures par défaut.")
+        mode_24h = True
+
+
 def regler_alarme():
     """
-    Demande à l'utilisateur l'heure de l'alarme et la stocke. 
-    L'alarme est stockée dans la variable globale 'alarme'. 
+    Demande à l'utilisateur l'heure de l'alarme et la stocke.
     """
     global alarme
     
@@ -69,114 +100,92 @@ def regler_alarme():
         minutes = int(input("Entrez les minutes (0-59) : "))
         secondes = int(input("Entrez les secondes (0-59) : "))
         
-        # Vérification que les valeurs sont dans les plages valides
         if 0 <= heures <= 23 and 0 <= minutes <= 59 and 0 <= secondes <= 59:
             alarme = (heures, minutes, secondes)
             print(f"Alarme réglée pour {afficher_heure(alarme)}")
         else:
-            print("Erreur :  valeurs hors limites !")
+            print("Erreur : valeurs hors limites !")
     except ValueError:
         print("Erreur : veuillez entrer des nombres entiers !")
 
 
 def verifier_alarme(heure_actuelle):
     """
-    Compare l'heure actuelle avec l'heure de l'alarme. 
-    Si elles correspondent, affiche le message d'alarme.
-    
-    Paramètre:
-        heure_actuelle: tuple (heures, minutes, secondes)
+    Compare l'heure actuelle avec l'heure de l'alarme.
     """
     global alarme
-
+    
     if alarme is not None and heure_actuelle == alarme:
-        print("\n\nDRIIIIING !  RÉVEIL MAMIE JEANNINE !\n")
-        # On désactive l'alarme après qu'elle ait sonné
+        print("\n\nDRIIIIING !\n")
         alarme = None
 
 
 def horloge_principale(heure_depart=None):
     """
     Fonction principale de l'horloge.
-    Affiche l'heure et l'actualise chaque seconde. 
-    
-    Paramètre:
-        heure_depart: tuple (heures, minutes, secondes) optionnel
-        Si None, utilise l'heure système
+    Affiche l'heure et l'actualise chaque seconde.
     """
     # Initialisation de l'heure
     if heure_depart is not None:
-        # Utiliser l'heure fournie par l'utilisateur
         heures = heure_depart[0]
         minutes = heure_depart[1]
         secondes = heure_depart[2]
     else:
-        # Utiliser l'heure système
         now = time.localtime()
         heures = now.tm_hour
         minutes = now.tm_min
         secondes = now.tm_sec
     
-    print("\nHorloge démarrée !  Appuyez sur Ctrl+C pour arrêter")
+    print("\nHorloge démarrée ! Appuyez sur Ctrl+C pour arrêter")
     print("-" * 40)
     
     # Boucle principale de l'horloge
     try:
         while True:
-            # Créer le tuple de l'heure actuelle
             heure_actuelle = (heures, minutes, secondes)
             
-            # Afficher l'heure
-            # \r ramène le curseur au début de la ligne
-            # end="" empêche le saut de ligne
-            # flush=True force l'affichage immédiat
             print(f"\r{afficher_heure(heure_actuelle)}", end="", flush=True)
             
-            # Vérifier si l'alarme doit sonner
             verifier_alarme(heure_actuelle)
             
-            # Attendre 1 seconde
             time.sleep(1)
             
-            # Incrémenter les secondes
             secondes = secondes + 1
             
-            # Gestion du passage à la minute suivante
             if secondes >= 60:
                 secondes = 0
                 minutes = minutes + 1
             
-            # Gestion du passage à l'heure suivante
             if minutes >= 60:
                 minutes = 0
                 heures = heures + 1
             
-            # Gestion du passage à minuit (nouveau jour)
             if heures >= 24:
                 heures = 0
     
     except KeyboardInterrupt:
-        # L'utilisateur a appuyé sur Ctrl+C
-        print("\n\nHorloge arrêtée.  À bientôt Mamie Jeannine !")
+        print("\n\nHorloge arrêtée.")
 
 
 # PROGRAMME PRINCIPAL
-if __name__ == "__main__": 
+if __name__ == "__main__":
     print("=" * 50)
     print("   HORLOGE DE MAMIE JEANNINE")
     print("=" * 50)
     
     heure_personnalisee = None
     
-    # Option 1 :  Régler l'heure manuellement
-    choix_heure = input("\nVoulez-vous régler l'heure manuellement ?  (o/n) : ")
+    choisir_mode_affichage()
+    
+    # Régler l'heure manuellement
+    choix_heure = input("\nVoulez-vous régler l'heure manuellement ? (o/n) : ")
     if choix_heure.lower() == "o":
         heure_personnalisee = regler_heure()
     
-    # Option 2 :  Régler une alarme
+    # Régler une alarme
     choix_alarme = input("\nVoulez-vous régler une alarme ? (o/n) : ")
-    if choix_alarme. lower() == "o":
+    if choix_alarme.lower() == "o":
         regler_alarme()
     
-    # Lancer l'horloge
+    # Lancer l'horloge (s'arrête définitivement avec Ctrl+C)
     horloge_principale(heure_personnalisee)
