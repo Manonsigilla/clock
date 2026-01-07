@@ -34,7 +34,7 @@ class Horloge:
                 heures_12h = heures - 12
                 periode = "PM"
             
-            heure_formatee = f"{heures_12h:  02d}:{minutes:02d}:{secondes:02d} {periode}"
+            heure_formatee = f"{heures_12h:02d}:{minutes:02d}:{secondes:02d} {periode}"
         
         return heure_formatee
 
@@ -82,7 +82,7 @@ class Horloge:
         """
         print("\n--- MODE D'AFFICHAGE ---")
         print("1. Mode 24 heures (ex: 16:30:00)")
-        print("2. Mode 12 heures (ex:  04:30:00 PM)")
+        print("2. Mode 12 heures (ex: 04:30:00 PM)")
         
         try:
             choix = int(input("Choisissez le mode (1 ou 2) : "))
@@ -93,7 +93,7 @@ class Horloge:
                 self.mode_24h = False
                 print("✓ Mode 12 heures sélectionné")
             else:
-                print("Choix invalide.   Mode 24 heures par défaut.")
+                print("Choix invalide.  Mode 24 heures par défaut.")
                 self.mode_24h = True
         except ValueError:
             print("Erreur : veuillez entrer 1 ou 2.  Mode 24 heures par défaut.")
