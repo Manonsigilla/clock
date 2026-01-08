@@ -1,7 +1,3 @@
-"""
-Horloge de Mamie Jeannine - Version avec alarmes multiples, chronomètre et timer
-"""
-
 import time
 
 
