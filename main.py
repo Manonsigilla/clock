@@ -262,6 +262,239 @@ class Horloge:
     # FIN DE LA NOUVELLE FONCTIONNALITÉ CHRONOMÈTRE
     # ========================================================================
 
+    # ========================================================================
+    # NOUVELLE FONCTIONNALITÉ : TIMER (MINUTEUR)
+    # ========================================================================
+    
+    def afficher_timer(self, heures, minutes, secondes, millisecondes):
+        """
+        Formate et retourne le temps du timer sous forme de chaîne.
+        
+        Paramètres:
+            heures: nombre d'heures restantes
+            minutes: nombre de minutes restantes
+            secondes: nombre de secondes restantes
+            millisecondes: nombre de millisecondes restantes (0-999)
+        
+        Retourne:
+            str: temps formaté "HH:MM:SS.mmm"
+        """
+        return f"{heures:02d}:{minutes:02d}:{secondes:02d}.{millisecondes:03d}"
+
+    def demander_duree_timer(self):
+        """
+        Demande à l'utilisateur la durée du timer avec validation.
+        
+        Retourne:
+            float: durée totale en secondes ou None si erreur
+        """
+        print("\n--- RÉGLAGE DU TIMER ---")
+        
+        try:
+            heures = int(input("Entrez les heures (0-23) : "))
+            minutes = int(input("Entrez les minutes (0-59) : "))
+            secondes = int(input("Entrez les secondes (0-59) : "))
+            
+            if heures < 0 or minutes < 0 or secondes < 0:
+                print("Erreur : les valeurs ne peuvent pas être négatives !")
+                return None
+            
+            if heures == 0 and minutes == 0 and secondes == 0:
+                print("Erreur : la durée doit être supérieure à zéro !")
+                return None
+            
+            # Convertir tout en secondes
+            duree_totale = heures * 3600 + minutes * 60 + secondes
+            return duree_totale
+            
+        except ValueError:
+            print("Erreur : veuillez entrer des nombres entiers !")
+            return None
+
+    def timer(self):
+        """
+        Fonction timer (minuteur) qui effectue un compte à rebours.
+        
+        Fonctionnalités:
+        - Demande une durée à l'utilisateur
+        - Effectue un compte à rebours jusqu'à 00:00:00.000
+        - Affiche le temps restant en temps réel avec précision à la milliseconde
+        - Alerte sonore et visuelle quand le temps est écoulé
+        - Possibilité de pause/reprise avec Ctrl+C
+        - Options : reprendre, réinitialiser ou quitter
+        """
+        print("\n" + "=" * 50)
+        print("  TIMER DE MAMIE JEANNINE")
+        print("=" * 50)
+        
+        # Demander la durée du timer
+        duree_totale = self.demander_duree_timer()
+        
+        if duree_totale is None:
+            print("\nRetour au menu principal...")
+            return
+        
+        # Afficher la durée configurée
+        heures_config = int(duree_totale // 3600)
+        reste = duree_totale % 3600
+        minutes_config = int(reste // 60)
+        secondes_config = int(reste % 60)
+        
+        print(f"\nTimer réglé sur : {heures_config:02d}:{minutes_config:02d}:{secondes_config:02d}")
+        print("\nAppuyez sur Entrée pour démarrer le timer...")
+        input()
+        
+        # Variables pour gérer le temps restant
+        temps_restant = duree_totale  # Temps restant en secondes
+        
+        print("\nTimer démarré ! Appuyez sur Ctrl+C pour mettre en pause")
+        print("-" * 50)
+        
+        try:
+            # Enregistrer le temps de départ
+            temps_depart = time.perf_counter()
+            
+            while temps_restant > 0:
+                # Calculer le temps écoulé depuis le départ
+                temps_actuel = time.perf_counter()
+                temps_ecoule = temps_actuel - temps_depart
+                
+                # Calculer le temps restant
+                temps_restant_actuel = temps_restant - temps_ecoule
+                
+                # Si le temps est écoulé, sortir de la boucle
+                if temps_restant_actuel <= 0:
+                    break
+                
+                # Convertir le temps restant en heures, minutes, secondes, millisecondes
+                heures = int(temps_restant_actuel // 3600)
+                reste = temps_restant_actuel % 3600
+                minutes = int(reste // 60)
+                reste = reste % 60
+                secondes = int(reste)
+                millisecondes = int((reste - secondes) * 1000)
+                
+                # Afficher le timer (écrase la ligne précédente)
+                print(f"\r{self.afficher_timer(heures, minutes, secondes, millisecondes)}", 
+                      end="", flush=True)
+                
+                # Petite pause pour ne pas surcharger le CPU
+                time.sleep(0.01)  # Actualisation tous les 10ms
+            
+            # Le timer est arrivé à zéro
+            print(f"\r{self.afficher_timer(0, 0, 0, 0)}")
+            print("\n\nDRIIIIIING !\n")
+            
+            input("Appuyez sur Entrée pour retourner au menu")
+            return
+        
+        except KeyboardInterrupt:
+            # Sauvegarder le temps restant au moment de l'interruption
+            temps_actuel = time.perf_counter()
+            temps_ecoule = temps_actuel - temps_depart
+            temps_restant = temps_restant - temps_ecoule
+            
+            # Si le temps restant est négatif, le mettre à zéro
+            if temps_restant < 0:
+                temps_restant = 0
+            
+            # Calculer heures, minutes, secondes pour l'affichage
+            heures = int(temps_restant // 3600)
+            reste = temps_restant % 3600
+            minutes = int(reste // 60)
+            reste = reste % 60
+            secondes = int(reste)
+            millisecondes = int((reste - secondes) * 1000)
+            
+            print("\n\nTimer mis en pause.")
+            print(f"Temps restant : {self.afficher_timer(heures, minutes, secondes, millisecondes)}")
+            
+            # Menu après la pause
+            while True:
+                print("\n--- OPTIONS ---")
+                print("1. Reprendre le timer")
+                print("2. Réinitialiser le timer")
+                print("3. Quitter le timer")
+                
+                try:
+                    choix = input("\nVotre choix (1/2/3) : ")
+                    
+                    if choix == "1":
+                        # Reprendre : relancer avec le temps restant
+                        if temps_restant <= 0:
+                            print("\nLe timer est déjà terminé !")
+                            print("Choisissez l'option 2 pour réinitialiser ou 3 pour quitter.")
+                            continue
+                        
+                        print("\nTimer repris ! Appuyez sur Ctrl+C pour mettre en pause")
+                        print("-" * 50)
+                        temps_depart = time.perf_counter()
+                        
+                        try:
+                            while temps_restant > 0:
+                                temps_actuel = time.perf_counter()
+                                temps_ecoule = temps_actuel - temps_depart
+                                temps_restant_actuel = temps_restant - temps_ecoule
+                                
+                                if temps_restant_actuel <= 0:
+                                    break
+                                
+                                heures = int(temps_restant_actuel // 3600)
+                                reste = temps_restant_actuel % 3600
+                                minutes = int(reste // 60)
+                                reste = reste % 60
+                                secondes = int(reste)
+                                millisecondes = int((reste - secondes) * 1000)
+                                
+                                print(f"\r{self.afficher_timer(heures, minutes, secondes, millisecondes)}", 
+                                      end="", flush=True)
+                                
+                                time.sleep(0.01)
+                            
+                            # Le timer est arrivé à zéro
+                            print(f"\r{self.afficher_timer(0, 0, 0, 0)}")
+                            print("\n\nDRIIIIIING !\n")
+                            
+                            input("Appuyez sur Entrée pour retourner au menu...")
+                            return
+                        
+                        except KeyboardInterrupt:
+                            temps_actuel = time.perf_counter()
+                            temps_ecoule = temps_actuel - temps_depart
+                            temps_restant = temps_restant - temps_ecoule
+                            
+                            if temps_restant < 0:
+                                temps_restant = 0
+                            
+                            heures = int(temps_restant // 3600)
+                            reste = temps_restant % 3600
+                            minutes = int(reste // 60)
+                            reste = reste % 60
+                            secondes = int(reste)
+                            millisecondes = int((reste - secondes) * 1000)
+                            
+                            print("\n\nTimer mis en pause.")
+                            print(f"Temps restant : {self.afficher_timer(heures, minutes, secondes, millisecondes)}")
+                            continue
+                    
+                    elif choix == "2":
+                        # Réinitialiser : relancer depuis le début
+                        print("\nTimer réinitialisé !")
+                        self.timer()
+                        return
+                    
+                    elif choix == "3":
+                        # Quitter
+                        print("\nRetour au menu principal...")
+                        return
+                    
+                    else:
+                        print("Choix invalide. Veuillez entrer 1, 2 ou 3.")
+                
+                except (EOFError, KeyboardInterrupt):
+                    print("\n\nRetour au menu principal...")
+                    return
+
     def horloge_principale(self, heure_depart=None):
         """
         Fonction principale de l'horloge.
@@ -329,12 +562,13 @@ class Horloge:
             
             # ===== NOUVEAU : Menu de sélection du mode =====
             print("\n--- MENU PRINCIPAL ---")
-            print("1. Horloge (affichage de l'heure)")
-            print("2. Chronomètre (mesure du temps écoulé)")
-            print("3. Quitter")
+            print("1. Horloge")
+            print("2. Chronomètre")
+            print("3. Timer")
+            print("4. Quitter")
             
             try:
-                choix_mode = input("\nChoisissez le mode (1, 2 ou 3) : ")
+                choix_mode = input("\nChoisissez le mode (1, 2, 3 ou 4) : ")
                 
                 if choix_mode == "2":
                     # Lancer le mode chronomètre
@@ -342,6 +576,11 @@ class Horloge:
                     # Après le chronomètre, la boucle while reprend et réaffiche le menu
                     continue
                 elif choix_mode == "3":
+                    # Lancer le mode timer
+                    self.timer()
+                    # Après le timer, la boucle while reprend et réaffiche le menu
+                    continue
+                elif choix_mode == "4":
                     print("\nÀ bientôt Mamie Jeannine !")
                     return
                 elif choix_mode != "1":
